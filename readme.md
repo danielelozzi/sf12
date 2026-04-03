@@ -4,7 +4,7 @@ Un'applicazione web standalone e interattiva per il calcolo automatico dei punte
 
 L'applicazione è progettata per essere semplice, veloce e per offrire un riscontro visivo immediato all'utente o al professionista.
 
-## ✨ Caratteristiche Principali
+## Caratteristiche Principali
 
 * **Calcolo Immediato:** Inserimento rapido delle 12 risposte e calcolo automatico dei punteggi standardizzati in base ai coefficienti normativi.
 * **Visualizzazione Avanzata (Dashboard Grafica):**
@@ -19,7 +19,7 @@ L'applicazione è progettata per essere semplice, veloce e per offrire un riscon
     * **Report PDF:** Generazione di un documento impaginato contenente i risultati numerici e i grafici renderizzati, pronto per la stampa o l'archiviazione.
 * **Privacy-First:** L'intero calcolo avviene lato client (nel browser dell'utente). Nessun dato medico o personale viene inviato a server esterni.
 
-## 🛠️ Tecnologie e Librerie Utilizzate
+## Tecnologie e Librerie Utilizzate
 
 Il progetto è costruito interamente con **HTML5, CSS3 e Vanilla JavaScript**. Non richiede framework pesanti (come React o Angular) né un backend.
 
@@ -28,7 +28,7 @@ Fa uso delle seguenti librerie esterne incluse via CDN:
 * [html2canvas](https://html2canvas.hertzen.com/) - Per catturare i risultati visivi e trasformarli in immagini.
 * [jsPDF](https://parall.ax/products/jspdf) - Per la generazione del file PDF finale.
 
-## 🚀 Come si usa
+## Come si usa
 
 Essendo un'applicazione interamente statica (client-side), l'installazione è immediata:
 
@@ -41,7 +41,7 @@ Essendo un'applicazione interamente statica (client-side), l'installazione è im
 
 *Non è necessario alcun web server, Node.js o database.*
 
-## ⚠️ Disclaimer Medico
+## Disclaimer Medico
 
 *Questo strumento è stato sviluppato a scopo informativo e di ricerca. I punteggi generati non costituiscono una diagnosi medica. Per qualsiasi valutazione clinica, fare riferimento a un professionista sanitario qualificato.*
 
