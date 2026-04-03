@@ -45,3 +45,11 @@ Essendo un'applicazione interamente statica (client-side), l'installazione è im
 
 *Questo strumento è stato sviluppato a scopo informativo e di ricerca. I punteggi generati non costituiscono una diagnosi medica. Per qualsiasi valutazione clinica, fare riferimento a un professionista sanitario qualificato.*
 
+## Citazione
+
+Questo strumento è basto sul codice dell'Università di Bologna
+
+[https://amsacta.unibo.it/id/eprint/5751/](https://amsacta.unibo.it/id/eprint/5751/)
+
+DOI: 10.6092/unibo/amsacta/5751
+
