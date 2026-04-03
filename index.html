@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcolatore SF-12 - Indici PCS e MCS</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 0.95em;
+            opacity: 0.95;
+            margin-bottom: 5px;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+        
+        .form-section {
+            padding: 30px;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            max-height: 800px;
+        }
+        
+        .results-section {
+            padding: 30px;
+            background: #f8f9fa;
+            overflow-y: auto;
+            max-height: 800px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        
+        .form-group .question {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        .radio-option:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
+        }
+        
+        .radio-option input[type="radio"] {
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+        
+        .radio-option.selected {
+            background: #e8eaf6;
+            border-color: #667eea;
+        }
+        
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #667eea;
+            margin: 25px 0 15px 0;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+        
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .score-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+        
+        .score-card.pcs {
+            border-color: #667eea;
+        }
+        
+        .score-card.mcs {
+            border-color: #764ba2;
+        }
+        
+        .score-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .score-value {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .score-card.mcs .score-value {
+            color: #764ba2;
+        }
+        
+        .score-info {
+            font-size: 0.8em;
+            color: #999;
+            margin-top: 8px;
+        }
+        
+        .interpretation {
+            background: #f0f4ff;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            color: #444;
+            margin-top: 10px;
+        }
+        
+        .score-card.mcs .interpretation {
+            background: #f5f0ff;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            position: relative;
+            height: 250px;
+            margin-bottom: 15px;
+        }
+        
+        .buttons-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.2s;
+            min-width: 120px;
+        }
+        
+        button:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        button.secondary {
+            border-color: #764ba2;
+            color: #764ba2;
+        }
+        
+        button.secondary:hover {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        .normative-ranges {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.85em;
+        }
+        
+        .normative-ranges h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .range-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .range-row:last-child {
+            border-bottom: none;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-section {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .form-section, .results-section {
+                padding: 20px;
+            }
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        
+        .nav-tab {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: #666;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+        
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .nav-tab:hover {
+            color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .input-group input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Calcolatore SF-12</h1>
+            <p>Short Form Health Survey - Indici PCS e MCS</p>
+            <p style="font-size: 0.85em; margin-top: 10px;">Calcolo automatico del Physical Component Summary e Mental Component Summary</p>
+        </div>
+        
+        <div class="content">
+            <div class="form-section">
+                <div class="error-message" id="errorMsg"></div>
+                <div class="success-message" id="successMsg"></div>
+                
+                <h2 style="font-size: 1.2em; margin-bottom: 20px; color: #333;">Inserisci le risposte</h2>
+                
+                <form id="sf12Form">
+                    <!-- PF02 -->
+                    <div class="form-group">
+                        <label>PF02: Attività di moderato impegno fisico</label>
+                        <div class="question">Es: trasportare sacchetti della spesa, svuotare la vasca da bagno, ecc.</div>
+                        <div class="radio-group" id="pf02-group">
+                            <label class="radio-option">
+                                <input type="radio" name="PF02" value="1"> Sì, mi limita molto
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="PF02" value="2"> Sì, mi limita un poco
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="PF02" value="3"> No, non mi limita affatto
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- PF04 -->
+                    <div class="form-group">
+                        <label>PF04: Salire qualche piano di scale</label>
+                        <div class="question">Come Lei sa, persone diverse hanno capacità diverse di svolgere varie attività</div>
+                        <div class="radio-group" id="pf04-group">
+                            <label class="radio-option">
+                                <input type="radio" name="PF04" value="1"> Sì, mi limita molto
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="PF04" value="2"> Sì, mi limita un poco
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="PF04" value="3"> No, non mi limita affatto
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="section-title">Limitazioni nel lavoro (fisica)</div>
+                    
+                    <!-- RP2 -->
+                    <div class="form-group">
+                        <label>RP2: Ha reso meno di quanto avrebbe voluto nel lavoro o altre attività</label>
+                        <div class="question">Per motivi di salute fisica</div>
+                        <div class="radio-group" id="rp2-group">
+                            <label class="radio-option">
+                                <input type="radio" name="RP2" value="1"> Sì
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="RP2" value="2"> No
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- RP3 -->
+                    <div class="form-group">
+                        <label>RP3: Ha dovuto limitare il tipo di lavoro o altre attività</label>
+                        <div class="question">Per motivi di salute fisica</div>
+                        <div class="radio-group" id="rp3-group">
+                            <label class="radio-option">
+                                <input type="radio" name="RP3" value="1"> Sì
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="RP3" value="2"> No
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="section-title">Dolore e salute generale</div>
+                    
+                    <!-- BP2 -->
+                    <div class="form-group">
+                        <label>BP2: In che misura il dolore l'ha ostacolata nel lavoro abituale?</label>
+                        <div class="radio-group" id="bp2-group">
+                            <label class="radio-option">
+                                <input type="radio" name="BP2" value="1"> Non è stata ostacolata affatto
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="BP2" value="2"> Ostacolata un poco
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="BP2" value="3"> Ostacolata moderatamente
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="BP2" value="4"> Ostacolata parecchio
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="BP2" value="5"> Ostacolata moltissimo
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- GH1 -->
+                    <div class="form-group">
+                        <label>GH1: In generale, direbbe che la sua salute è:</label>
+                        <div class="radio-group" id="gh1-group">
+                            <label class="radio-option">
+                                <input type="radio" name="GH1" value="1"> Eccellente
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="GH1" value="2"> Molto buona
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="GH1" value="3"> Buona
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="GH1" value="4"> Discreta
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="GH1" value="5"> Scadente
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="section-title">Energia e attività sociali</div>
+                    
+                    <!-- VT2 -->
+                    <div class="form-group">
+                        <label>VT2: Si sente pieno di energia?</label>
+                        <div class="radio-group" id="vt2-group">
+                            <label class="radio-option">
+                                <input type="radio" name="VT2" value="1"> Sempre
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="VT2" value="2"> Quasi sempre
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="VT2" value="3"> Molte volte
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="VT2" value="4"> Qualche volta
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="VT2" value="5"> Poche volte
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="VT2" value="6"> Mai
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- SF2 -->
+                    <div class="form-group">
+                        <label>SF2: Per quanto tempo la salute fisica o stato emotivo hanno interferito attività sociali?</label>
+                        <div class="radio-group" id="sf2-group">
+                            <label class="radio-option">
+                                <input type="radio" name="SF2" value="1"> Sempre
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="SF2" value="2"> Quasi sempre
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="SF2" value="3"> Qualche volta
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="SF2" value="4"> Poche volte
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="SF2" value="5"> Mai
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="section-title">Stato emotivo</div>
+                    
+                    <!-- RE2 -->
+                    <div class="form-group">
+                        <label>RE2: Ha reso meno di quanto avrebbe voluto nel lavoro o altre attività</label>
+                        <div class="question">Per motivi emotivi (come sentirsi depresso o ansioso)</div>
+                        <div class="radio-group" id="re2-group">
+                            <label class="radio-option">
+                                <input type="radio" name="RE2" value="1"> Sì
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="RE2" value="2"> No
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- RE3 -->
+                    <div class="form-group">
+                        <label>RE3: Ha avuto un calo di concentrazione nel lavoro o altre attività</label>
+                        <div class="question">Per motivi emotivi (come sentirsi depresso o ansioso)</div>
+                        <div class="radio-group" id="re3-group">
+                            <label class="radio-option">
+                                <input type="radio" name="RE3" value="1"> Sì
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="RE3" value="2"> No
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- MH3 -->
+                    <div class="form-group">
+                        <label>MH3: Si sente calmo e sereno?</label>
+                        <div class="radio-group" id="mh3-group">
+                            <label class="radio-option">
+                                <input type="radio" name="MH3" value="1"> Sempre
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="MH3" value="2"> Quasi sempre
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="MH3" value="3"> Molte volte
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="MH3" value="4"> Qualche volta
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="MH3" value="5"> Poche volte
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="MH3" value="6"> Mai
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- MH4 -->
+                    <div class="form-group">
+                        <label>MH4: Si sente scoraggiato e triste?</label>
+                        <div class="radio-group" id="mh4-group">
+                            <label class="radio-option">
+                                <input type="radio" name="MH4" value="1"> Sempre
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="MH4" value="2"> Quasi sempre
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="MH4" value="3"> Molte volte
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="MH4" value="4"> Qualche volta
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="MH4" value="5"> Poche volte
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="MH4" value="6"> Mai
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="buttons-group">
+                        <button type="button" onclick="calculateScores()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">Calcola Punteggi</button>
+                        <button type="reset" class="secondary" onclick="resetForm()">Azzera</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="results-section">
+                <h2 style="font-size: 1.2em; margin-bottom: 20px; color: #333;">Risultati</h2>
+                
+                <div class="results-container" id="resultsContainer" style="display: none;">
+                    <div class="normative-ranges">
+                        <h4>Intervalli normativi (popolazione generale italiana)</h4>
+                        <div class="range-row">
+                            <span>PCS: 0-100 (media ≈ 50)</span>
+                            <span style="font-weight: 600;">Componente Fisica</span>
+                        </div>
+                        <div class="range-row">
+                            <span>MCS: 0-100 (media ≈ 50)</span>
+                            <span style="font-weight: 600;">Componente Mentale</span>
+                        </div>
+                    </div>
+                    
+                    <div class="score-card pcs">
+                        <div class="score-label">PCS (Physical Component Summary)</div>
+                        <div class="score-value" id="pcsScore">--</div>
+                        <div class="score-info">Componente fisica della salute</div>
+                        <div class="interpretation" id="pcsInterpretation"></div>
+                    </div>
+                    
+                    <div class="score-card mcs">
+                        <div class="score-label">MCS (Mental Component Summary)</div>
+                        <div class="score-value" id="mcsScore">--</div>
+                        <div class="score-info">Componente mentale della salute</div>
+                        <div class="interpretation" id="mcsInterpretation"></div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="scoresChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="profileChart"></canvas>
+                    </div>
+                    
+                    <div class="buttons-group">
+                        <button type="button" onclick="exportToCSV()" class="secondary">📥 Esporta CSV</button>
+                        <button type="button" onclick="exportToJSON()" class="secondary">📥 Esporta JSON</button>
+                        <button type="button" onclick="printResults()" class="secondary">🖨️ Stampa</button>
+                    </div>
+                </div>
+                
+                <div id="noResults" style="text-align: center; color: #999; padding: 40px 20px;">
+                    <p style="font-size: 1.1em;">Nessun risultato ancora</p>
+                    <p style="font-size: 0.9em; margin-top: 10px;">Compila il modulo e clicca "Calcola Punteggi"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // SF-12 Coefficients
+        const PCS_COEFFICIENTS = {
+            'PF02_1': -7.23216, 'PF02_2': -3.45555,
+            'PF04_1': -6.24397, 'PF04_2': -2.73557,
+            'RP2_1': -4.61617,
+            'RP3_1': -5.51747,
+            'BP2_1': -11.25544, 'BP2_2': -8.38063, 'BP2_3': -6.50522, 'BP2_4': -3.80130,
+            'GH1_1': -8.37399, 'GH1_2': -5.56461, 'GH1_3': -3.02396, 'GH1_4': -1.31872,
+            'VT2_1': -2.44706, 'VT2_2': -2.02168, 'VT2_3': -1.6185, 'VT2_4': -1.14387, 'VT2_5': -0.42251,
+            'SF2_1': -0.33682, 'SF2_2': -0.94342, 'SF2_3': -0.18043, 'SF2_4': 0.11038,
+            'RE2_1': 3.04365,
+            'RE3_1': 2.32091,
+            'MH3_1': 3.46638, 'MH3_2': 2.90426, 'MH3_3': 2.37241, 'MH3_4': 1.36689, 'MH3_5': 0.66514,
+            'MH4_1': 4.61446, 'MH4_2': 3.41593, 'MH4_3': 2.34247, 'MH4_4': 1.28044, 'MH4_5': 0.41188
+        };
+        
+        const MCS_COEFFICIENTS = {
+            'PF02_1': 3.93115, 'PF02_2': 1.8684,
+            'PF04_1': 2.68282, 'PF04_2': 1.43103,
+            'RP2_1': 1.4406,
+            'RP3_1': 1.66968,
+            'BP2_1': 1.48619, 'BP2_2': 1.76691, 'BP2_3': 1.49384, 'BP2_4': 0.90384,
+            'GH1_1': -1.71175, 'GH1_2': -0.16891, 'GH1_3': 0.03482, 'GH1_4': -0.06064,
+            'VT2_1': -6.02409, 'VT2_2': -4.88962, 'VT2_3': -3.29805, 'VT2_4': -1.65178, 'VT2_5': -0.92057,
+            'SF2_1': -6.29724, 'SF2_2': -8.26066, 'SF2_3': -5.63286, 'SF2_4': -3.13896,
+            'RE2_1': -6.82672,
+            'RE3_1': -5.69921,
+            'MH3_1': -10.19085, 'MH3_2': -7.92717, 'MH3_3': -6.31121, 'MH3_4': -4.09842, 'MH3_5': -1.94949,
+            'MH4_1': -16.15395, 'MH4_2': -10.77911, 'MH4_3': -8.09914, 'MH4_4': -4.59055, 'MH4_5': -1.95934
+        };
+        
+        const PCS_CONSTANT = 56.57706;
+        const MCS_CONSTANT = 60.75781;
+        
+        let currentScores = null;
+        let chartsInstance = {};
+        
+        // Update radio button appearance
+        document.querySelectorAll('.radio-option input[type="radio"]').forEach(input => {
+            input.addEventListener('change', function() {
+                document.querySelectorAll(`#${this.name}-group .radio-option`).forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.closest('.radio-option').classList.add('selected');
+            });
+        });
+        
+        function calculateScores() {
+            const form = document.getElementById('sf12Form');
+            const formData = new FormData(form);
+            
+            // Validate all fields are filled
+            const fields = ['PF02', 'PF04', 'RP2', 'RP3', 'BP2', 'GH1', 'VT2', 'SF2', 'RE2', 'RE3', 'MH3', 'MH4'];
+            const missingFields = fields.filter(f => !formData.get(f));
+            
+            if (missingFields.length > 0) {
+                showError('Per favore, completa tutte le domande prima di calcolare i punteggi.');
+                return;
+            }
+            
+            // Prepare data with reverse coding
+            const data = {};
+            fields.forEach(f => {
+                data[f] = parseInt(formData.get(f));
+            });
+            
+            // Apply reverse coding
+            const RBP2 = 6 - data.BP2;
+            const RGH1 = 6 - data.GH1;
+            const RVT2 = 7 - data.VT2;
+            const RMH3 = 7 - data.MH3;
+            
+            // Create dummy variables and calculate scores
+            let pcsRaw = calculateComponentScore(data, RBP2, RGH1, RVT2, RMH3, 'PCS');
+            let mcsRaw = calculateComponentScore(data, RBP2, RGH1, RVT2, RMH3, 'MCS');
+            
+            // Standardize
+            const pcs = pcsRaw + PCS_CONSTANT;
+            const mcs = mcsRaw + MCS_CONSTANT;
+            
+            currentScores = {
+                PCS: Math.round(pcs * 100) / 100,
+                MCS: Math.round(mcs * 100) / 100,
+                timestamp: new Date().toLocaleString('it-IT')
+            };
+            
+            displayResults(currentScores);
+            showSuccess('Punteggi calcolati con successo!');
+        }
+        
+        function calculateComponentScore(data, RBP2, RGH1, RVT2, RMH3, component) {
+            const coefficients = component === 'PCS' ? PCS_COEFFICIENTS : MCS_COEFFICIENTS;
+            let score = 0;
+            
+            // PF02
+            if (data.PF02 === 1) score += coefficients['PF02_1'];
+            if (data.PF02 === 2) score += coefficients['PF02_2'];
+            
+            // PF04
+            if (data.PF04 === 1) score += coefficients['PF04_1'];
+            if (data.PF04 === 2) score += coefficients['PF04_2'];
+            
+            // RP2
+            if (data.RP2 === 1) score += coefficients['RP2_1'];
+            
+            // RP3
+            if (data.RP3 === 1) score += coefficients['RP3_1'];
+            
+            // BP2 (reversed)
+            if (RBP2 === 1) score += coefficients['BP2_1'];
+            if (RBP2 === 2) score += coefficients['BP2_2'];
+            if (RBP2 === 3) score += coefficients['BP2_3'];
+            if (RBP2 === 4) score += coefficients['BP2_4'];
+            
+            // GH1 (reversed)
+            if (RGH1 === 1) score += coefficients['GH1_1'];
+            if (RGH1 === 2) score += coefficients['GH1_2'];
+            if (RGH1 === 3) score += coefficients['GH1_3'];
+            if (RGH1 === 4) score += coefficients['GH1_4'];
+            
+            // VT2 (reversed)
+            if (RVT2 === 1) score += coefficients['VT2_1'];
+            if (RVT2 === 2) score += coefficients['VT2_2'];
+            if (RVT2 === 3) score += coefficients['VT2_3'];
+            if (RVT2 === 4) score += coefficients['VT2_4'];
+            if (RVT2 === 5) score += coefficients['VT2_5'];
+            
+            // SF2
+            if (data.SF2 === 1) score += coefficients['SF2_1'];
+            if (data.SF2 === 2) score += coefficients['SF2_2'];
+            if (data.SF2 === 3) score += coefficients['SF2_3'];
+            if (data.SF2 === 4) score += coefficients['SF2_4'];
+            
+            // RE2
+            if (data.RE2 === 1) score += coefficients['RE2_1'];
+            
+            // RE3
+            if (data.RE3 === 1) score += coefficients['RE3_1'];
+            
+            // MH3 (reversed)
+            if (RMH3 === 1) score += coefficients['MH3_1'];
+            if (RMH3 === 2) score += coefficients['MH3_2'];
+            if (RMH3 === 3) score += coefficients['MH3_3'];
+            if (RMH3 === 4) score += coefficients['MH3_4'];
+            if (RMH3 === 5) score += coefficients['MH3_5'];
+            
+            // MH4
+            if (data.MH4 === 1) score += coefficients['MH4_1'];
+            if (data.MH4 === 2) score += coefficients['MH4_2'];
+            if (data.MH4 === 3) score += coefficients['MH4_3'];
+            if (data.MH4 === 4) score += coefficients['MH4_4'];
+            if (data.MH4 === 5) score += coefficients['MH4_5'];
+            
+            return score;
+        }
+        
+        function displayResults(scores) {
+            document.getElementById('noResults').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'block';
+            
+            document.getElementById('pcsScore').textContent = scores.PCS;
+            document.getElementById('mcsScore').textContent = scores.MCS;
+            
+            // Interpretations
+            const pcsInterp = interpretScore(scores.PCS, 'PCS');
+            const mcsInterp = interpretScore(scores.MCS, 'MCS');
+            
+            document.getElementById('pcsInterpretation').textContent = pcsInterp;
+            document.getElementById('mcsInterpretation').textContent = mcsInterp;
+            
+            // Charts
+            createCharts(scores);
+        }
+        
+        function interpretScore(score, type) {
+            if (score >= 60) return '✓ Sopra la media della popolazione generale';
+            if (score >= 50) return '≈ In linea con la media della popolazione generale';
+            if (score >= 40) return '↓ Leggermente sotto la media della popolazione generale';
+            return '↓↓ Significativamente sotto la media della popolazione generale';
+        }
+        
+        function createCharts(scores) {
+            // Destroy existing charts
+            if (chartsInstance.scoresChart) chartsInstance.scoresChart.destroy();
+            if (chartsInstance.profileChart) chartsInstance.profileChart.destroy();
+            
+            // Scores comparison chart
+            const ctx1 = document.getElementById('scoresChart').getContext('2d');
+            chartsInstance.scoresChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['PCS', 'MCS', 'Media'],
+                    datasets: [{
+                        label: 'Punteggi',
+                        data: [scores.PCS, scores.MCS, 50],
+                        backgroundColor: ['#667eea', '#764ba2', '#e0e0e0'],
+                        borderColor: ['#667eea', '#764ba2', '#999'],
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Profile chart
+            const ctx2 = document.getElementById('profileChart').getContext('2d');
+            chartsInstance.profileChart = new Chart(ctx2, {
+                type: 'radar',
+                data: {
+                    labels: ['Salute Fisica', 'Salute Mentale'],
+                    datasets: [
+                        {
+                            label: 'Punteggi attuali',
+                            data: [scores.PCS, scores.MCS],
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: '#667eea'
+                        },
+                        {
+                            label: 'Media popolazione',
+                            data: [50, 50],
+                            borderColor: '#999',
+                            backgroundColor: 'rgba(200, 200, 200, 0.05)',
+                            borderWidth: 1,
+                            borderDash: [5, 5],
+                            pointBackgroundColor: '#999'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function resetForm() {
+            document.getElementById('sf12Form').reset();
+            document.querySelectorAll('.radio-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.getElementById('noResults').style.display = 'block';
+            document.getElementById('resultsContainer').style.display = 'none';
+            clearMessages();
+        }
+        
+        function exportToCSV() {
+            if (!currentScores) return;
+            
+            const rows = [
+                ['SF-12 Results'],
+                ['Data/Ora', currentScores.timestamp],
+                [''],
+                ['Indice', 'Punteggio'],
+                ['PCS (Physical Component Summary)', currentScores.PCS],
+                ['MCS (Mental Component Summary)', currentScores.MCS]
+            ];
+            
+            let csvContent = rows.map(row => row.join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `sf12-results-${new Date().getTime()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function exportToJSON() {
+            if (!currentScores) return;
+            
+            const jsonData = {
+                test: 'SF-12',
+                timestamp: currentScores.timestamp,
+                results: {
+                    PCS: currentScores.PCS,
+                    MCS: currentScores.MCS
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `sf12-results-${new Date().getTime()}.json`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function printResults() {
+            window.print();
+        }
+        
+        function showError(msg) {
+            const elem = document.getElementById('errorMsg');
+            elem.textContent = msg;
+            elem.classList.add('show');
+        }
+        
+        function showSuccess(msg) {
+            const elem = document.getElementById('successMsg');
+            elem.textContent = msg;
+            elem.classList.add('show');
+            setTimeout(() => elem.classList.remove('show'), 3000);
+        }
+        
+        function clearMessages() {
+            document.getElementById('errorMsg').classList.remove('show');
+            document.getElementById('successMsg').classList.remove('show');
+        }
+    </script>
+</body>
+</html>
